@@ -12,3 +12,14 @@ conda activate pb_elena
 
 
 Now, running the example (python .\load_robot_pb.py) should show the robot being simulated (and dropping to the floor instantly, whoops)
+
+
+
+# Install gemini
+---
+```bash
+conda create --name genesis python==3.10 
+conda activate genesis
+pip install git+https://github.com/Genesis-Embodied-AI/Genesis.git
+pip install torch torchvision torchaudio 
+```
