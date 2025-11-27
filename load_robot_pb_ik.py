@@ -1,6 +1,8 @@
 import pybullet as p
 import pybullet_data
 import os
+import math
+import time  #AGGIUNTO PER TIME
 
 # Connect to the physics server using SharedMemory GUI
 physicsClient = p.connect(p.GUI_SERVER)
@@ -26,9 +28,11 @@ planeId = p.loadURDF("plane.urdf")
 
 # Load the robot
 robot_urdf = os.path.join(urdf_path, "crx10ia_l.urdf")
-robotBasePosition = [0, 0, 1]
+robotBasePosition = [0, 0, 0]
 robotBaseOrientation = p.getQuaternionFromEuler([0, 0, 0])
-robotId = p.loadURDF(robot_urdf, robotBasePosition, robotBaseOrientation)
+#robotId = p.loadURDF(robot_urdf, robotBasePosition, robotBaseOrientation) #VECCHIA CRREAZIONE DEL ROBOT
+# Carica il robot con base fissa direttamente
+robotId = p.loadURDF(robot_urdf, robotBasePosition, robotBaseOrientation, useFixedBase=True)
 
 # Get number of joints
 num_joints = p.getNumJoints(robotId)
@@ -38,17 +42,20 @@ for i in range(num_joints):
     joint_info = p.getJointInfo(robotId, i)
     print(f"Joint {i}: {joint_info[1].decode('utf-8')}")
 
-# Create a constraint to stick the robot to the plane
-constraintId = p.createConstraint(
-    parentBodyUniqueId=planeId,
-    parentLinkIndex=-1,
-    childBodyUniqueId=robotId,
-    childLinkIndex=-1,
-    jointType=p.JOINT_FIXED,
-    jointAxis=[0, 0, 0],
-    parentFramePosition=[0, 0, 0],
-    childFramePosition=[0, 0, 0],
-)
+#VECCHIO VINCOLO DEL ROBOT
+#Create a constraint to stick the robot to the plane
+#constraintId = p.createConstraint(
+#    parentBodyUniqueId=planeId,
+#    parentLinkIndex=-1,
+#    childBodyUniqueId=robotId,
+#    childLinkIndex=-1,
+#    jointType=p.JOINT_FIXED,
+#    jointAxis=[0, 0, 0],
+#    parentFramePosition=[0, 0, 0],
+#    childFramePosition=[0, 0, 0],
+#)
+
+
 
 # Define target positions for joints (in radians)
 target_positions = [0 for i in range(num_joints)]  # Example positions
@@ -61,11 +68,23 @@ max_force = 10000  # Maximum force to apply
 # damping = 1
 # for i in range(num_joints):
 #     p.changeDynamics(robotId, i, linearDamping=damping, angularDamping=damping)
-    
+
+#AGGIUNTO
+# Trova l'indice dell'end-effector (di solito l'ultimo giunto mobile)
+end_effector_index = num_joints - 1  # o scegli il giusto joint con getJointInfo
+# Posizione desiderata della "mano" del robot (end-effector)
+target_xyz = [0.5, 0.2, 0.6] #PER ARRIVARE A QUESTA POSIZIONE DELLA MANO
+#start_time = time.time()  #PER LA MODFICA NEL TEMPO
+
 # Main simulation loop
 while True:
+    #per la modifica nel tempo
+    #elapsed = time.time() - start_time 
+    #target_xyz = [0.5, 0.2, 0.6 + 0.1 * math.sin(2 * math.pi * elapsed)] #PUNTO DELLA MANO CHE VARIA NEL TEMPO 
+    # Calcolo le posizioni dei giunti usando IK
+    target_positions = p.calculateInverseKinematics(robotId, end_effector_index, target_xyz)
     # Apply position control to each joint
-    for i in range(num_joints):
+    for i in range(len(target_positions)): #MODIFICATO PERCHè LEN NUMJOINT>LEN TARGETPOSITION)
         p.setJointMotorControl2(
             bodyIndex=robotId,
             jointIndex=i,
@@ -85,4 +104,7 @@ while True:
         joint_states.append(state[0])  # state[0] is the current position
     # print(f"Current joint positions: {joint_states}")
 
-p.disconnect()
+    #AGGIUNTO
+    # Pausa per non chiudere tutto subito
+    time.sleep(1./240.)
+#p.disconnect() #vecchia chiusura del ciclo

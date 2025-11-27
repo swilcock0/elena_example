@@ -311,32 +311,4 @@
     <parent link="J6_link"/>
     <child link="flange"/>
   </joint>
-  <!-- flange1 coords -->
-  <link name="flange1"/>
-  <joint name="flange-flange1" type="fixed">
-    <origin rpy="0 1.5707963267948966 0" xyz="0 0 0"/>
-    <parent link="flange"/>
-    <child link="flange1"/>
-  </joint>
-  <!-- tcp coords -->
-  <link name="tcp"/>
-  <joint name="flange1-tcp" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="flange1"/>
-    <child link="tcp"/>
-  </joint>
-  <!-- tcp right coord -->
-  <link name="tcp_right"/>
-  <joint name="tcp-tcp_right" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0.012 0.013"/>
-    <parent link="tcp"/>
-    <child link="tcp_right"/>
-  </joint>
-  <!-- tcp left coord -->
-  <link name="tcp_left"/>
-  <joint name="tcp-tcp_left" type="fixed">
-    <origin rpy="0 0 0" xyz="0 -0.012 0.013"/>
-    <parent link="tcp"/>
-    <child link="tcp_left"/>
-  </joint>
 </robot>
